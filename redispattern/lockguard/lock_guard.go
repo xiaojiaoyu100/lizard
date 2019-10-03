@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/xiaojiaoyu100/lizard/redispattern/lockguard/internal"
+	lock "github.com/xiaojiaoyu100/lizard/redispattern/lockguard/internal"
 )
 
 const (
