@@ -3,11 +3,10 @@ package concurrentratelimiter
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
 	"io"
-	"strings"
 	"time"
 
-	"github.com/xiaojiaoyu100/lizard/redispattern"
 	"github.com/xiaojiaoyu100/lizard/timekit"
 )
 
@@ -38,19 +37,22 @@ return ret
 `
 )
 
-var (
-	enterScriptDigest string
-	leaveScriptDigest string
-)
+func enterScriptDigest() (string, error) {
+	hash := sha1.New()
+	_, err := io.WriteString(hash, enterScript)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
+}
 
-func init() {
-	e := sha1.New()
-	io.WriteString(e, enterScript)
-	enterScriptDigest = hex.EncodeToString(e.Sum(nil))
-
-	l := sha1.New()
-	io.WriteString(l, leaveScript)
-	leaveScriptDigest = hex.EncodeToString(l.Sum(nil))
+func leaveScriptDigest() (string, error) {
+	hash := sha1.New()
+	_, err := io.WriteString(hash, leaveScript)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 type Setting func(o *Option) error
@@ -75,15 +77,15 @@ func WithLimit(limit int64) Setting {
 }
 
 type ConcurrentRateLimiter struct {
-	runner redispattern.Runner
+	redis  rediser
 	key    string
 	option Option
 }
 
-func New(runner redispattern.Runner, key string, settings ...Setting) (*ConcurrentRateLimiter, error) {
+func New(redis rediser, key string, settings ...Setting) (*ConcurrentRateLimiter, error) {
 	c := &ConcurrentRateLimiter{
-		runner: runner,
-		key:    key,
+		redis: redis,
+		key:   key,
 	}
 	o := Option{
 		ttl:   timekit.DurationToMillis(3 * time.Second),
@@ -99,41 +101,55 @@ func New(runner redispattern.Runner, key string, settings ...Setting) (*Concurre
 }
 
 func (c *ConcurrentRateLimiter) Enter(random string) (bool, error) {
-	ok, err := c.runner.EvaSha1(enterScriptDigest,
-		c.key,
+	d, err := enterScriptDigest()
+	if err != nil {
+		return false, err
+	}
+	exist, err := c.redis.ScriptExists(d).Result()
+	if err != nil {
+		return false, err
+	}
+	if !exist[0] {
+		_, err := c.redis.ScriptLoad(enterScript).Result()
+		if err != nil {
+			return false, err
+		}
+	}
+	ret, err := c.redis.EvalSha(d,
+		[]string{c.key},
 		c.option.limit,
 		timekit.NowInMillis(),
 		random,
 		c.option.ttl,
-	)
-	if err != nil && strings.HasPrefix(err.Error(), "NOSCRIPT") {
-		ok, err := c.runner.Eva(enterScript,
-			c.key,
-			c.option.limit,
-			timekit.NowInMillis(),
-			random,
-			c.option.ttl,
-		)
-		if err != nil {
-			return false, err
-		}
-		return ok == 1, nil
-	}
+	).Result()
 	if err != nil {
 		return false, err
 	}
-	return ok == 1, nil
+
+	r, ok := ret.(int64)
+	if !ok {
+		return false, errors.New("unexpected")
+	}
+
+	return r == 1, nil
 }
 
 func (c *ConcurrentRateLimiter) Leave(random string) error {
-	_, err := c.runner.EvaSha1(leaveScriptDigest, c.key, random)
-	if err != nil && strings.HasPrefix(err.Error(), "NOSCRIPT") {
-		_, err := c.runner.Eva(leaveScript, c.key, random)
+	d, err := leaveScriptDigest()
+	if err != nil {
+		return err
+	}
+	exist, err := c.redis.ScriptExists(d).Result()
+	if err != nil {
+		return err
+	}
+	if !exist[0] {
+		_, err := c.redis.ScriptLoad(leaveScript).Result()
 		if err != nil {
 			return err
 		}
-		return nil
 	}
+	_, err = c.redis.EvalSha(d, []string{c.key}, random).Result()
 	if err != nil {
 		return err
 	}

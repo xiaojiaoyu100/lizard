@@ -3,11 +3,7 @@ package lockguard
 import (
 	"crypto/rand"
 	"crypto/rc4"
-
 	"time"
-
-	"github.com/go-redis/redis"
-	lock "github.com/xiaojiaoyu100/lizard/redispattern/lockguard/internal"
 )
 
 const (
@@ -22,21 +18,21 @@ end`
 )
 
 type LockGuard struct {
-	lock lock.Lock
+	lock Lock
 }
 
-type Setter func(l *lock.Lock)
+type Setter func(l *Lock)
 
 func WithExpiration(expiration time.Duration) Setter {
-	return func(l *lock.Lock) {
+	return func(l *Lock) {
 		l.Expiration = expiration
 	}
 }
 
-func New(client *redis.Client, key string, setters ...Setter) *LockGuard {
+func New(redis rediser, key string, setters ...Setter) *LockGuard {
 	guard := new(LockGuard)
-	l := lock.Lock{
-		Client:     client,
+	l := Lock{
+		redis:      redis,
 		Key:        key,
 		Value:      "",
 		Expiration: 30 * time.Second,
@@ -62,7 +58,7 @@ func (guard *LockGuard) Lock() bool {
 	}
 	cipher.XORKeyStream(src, src)
 	guard.lock.Value = string(src)
-	cmd := guard.lock.Client.SetNX(guard.lock.Key, guard.lock.Value, guard.lock.Expiration)
+	cmd := guard.lock.redis.SetNX(guard.lock.Key, guard.lock.Value, guard.lock.Expiration)
 	flag, err := cmd.Result()
 	if err != nil {
 		return false
@@ -73,6 +69,6 @@ func (guard *LockGuard) Lock() bool {
 func (guard *LockGuard) UnLock() {
 	if len(guard.lock.Key) > 0 && len(guard.lock.Value) > 0 {
 		keys := []string{guard.lock.Key}
-		guard.lock.Client.Eval(delLuaScript, keys, guard.lock.Value)
+		guard.lock.redis.Eval(delLuaScript, keys, guard.lock.Value)
 	}
 }

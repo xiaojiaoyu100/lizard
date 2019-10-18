@@ -5,10 +5,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
-	"strings"
 	"time"
 
-	"github.com/go-redis/redis"
 	"github.com/xiaojiaoyu100/lizard/timekit"
 )
 
@@ -46,17 +44,18 @@ end
 return 0
 `
 
-var scriptDigest string
-
-func init() {
+func scriptDigest() (string, error) {
 	s := sha1.New()
-	io.WriteString(s, script)
-	scriptDigest = hex.EncodeToString(s.Sum(nil))
+	_, err := io.WriteString(s, script)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(s.Sum(nil)), nil
 }
 
 // TokenBucket stands for a token bucket.
 type TokenBucket struct {
-	client     *redis.Client // redis client
+	redis      rediser       // redis inst
 	Key        string        // redis key
 	TokenNum   int64         // token bucket size
 	Rate       time.Duration // the rate of putting token into bucket
@@ -64,7 +63,7 @@ type TokenBucket struct {
 }
 
 // New returns an instance of TokenBucket
-func New(client *redis.Client, key string, tokenNum int64, rate time.Duration, expiration int64) (*TokenBucket, error) {
+func New(redis rediser, key string, tokenNum int64, rate time.Duration, expiration int64) (*TokenBucket, error) {
 	h := sha1.New()
 	_, err := io.WriteString(h, script)
 	if err != nil {
@@ -76,7 +75,7 @@ func New(client *redis.Client, key string, tokenNum int64, rate time.Duration, e
 	}
 
 	return &TokenBucket{
-		client:     client,
+		redis:      redis,
 		Key:        key,
 		TokenNum:   tokenNum,
 		Rate:       rate,
@@ -85,7 +84,7 @@ func New(client *redis.Client, key string, tokenNum int64, rate time.Duration, e
 }
 
 func (tb *TokenBucket) eva(script string, key string, argv ...interface{}) (int64, error) {
-	ret, err := tb.client.Eval(script, []string{key}, argv...).Result()
+	ret, err := tb.redis.Eval(script, []string{key}, argv...).Result()
 	if err != nil {
 		return 0, err
 	}
@@ -93,7 +92,7 @@ func (tb *TokenBucket) eva(script string, key string, argv ...interface{}) (int6
 }
 
 func (tb *TokenBucket) evaSha1(sha1 string, key string, argv ...interface{}) (int64, error) {
-	ret, err := tb.client.EvalSha(sha1, []string{key}, argv...).Result()
+	ret, err := tb.redis.EvalSha(sha1, []string{key}, argv...).Result()
 	if err != nil {
 		return 0, err
 	}
@@ -105,15 +104,21 @@ func (tb *TokenBucket) Consume(num int64) (bool, error) {
 	if num > tb.TokenNum {
 		return false, errors.New("token is not enough")
 	}
-	ok, err := tb.evaSha1(scriptDigest, tb.Key, timekit.DurationToMillis(tb.Rate), tb.TokenNum, timekit.NowInMillis(), num, tb.Expiration)
-	// NOSCRIPT 这个error是稳定的 see https://redis.io/commands/eval
-	if err != nil && strings.HasPrefix(err.Error(), "NOSCRIPT") {
-		ok, err := tb.eva(script, tb.Key, timekit.DurationToMillis(tb.Rate), tb.TokenNum, timekit.NowInMillis(), num, tb.Expiration)
+	digest, err := scriptDigest()
+	if err != nil {
+		return false, err
+	}
+	exist, err := tb.redis.ScriptExists(digest).Result()
+	if err != nil {
+		return false, err
+	}
+	if !exist[0] {
+		_, err := tb.redis.ScriptLoad(script).Result()
 		if err != nil {
 			return false, err
 		}
-		return ok == 1, nil
 	}
+	ok, err := tb.evaSha1(digest, tb.Key, timekit.DurationToMillis(tb.Rate), tb.TokenNum, timekit.NowInMillis(), num, tb.Expiration)
 	if err != nil {
 		return false, err
 	}

@@ -1,13 +1,11 @@
-package lock
+package lockguard
 
 import (
 	"time"
-
-	"github.com/go-redis/redis"
 )
 
 type Lock struct {
-	Client     *redis.Client
+	redis      rediser
 	Key        string
 	Value      string
 	Expiration time.Duration
