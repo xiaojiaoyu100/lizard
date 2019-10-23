@@ -12,12 +12,12 @@
     "internal/proto",
     "internal/util"
   ]
-  revision = "75795aa4236dc7341eefac3bbe945e68c99ef9df"
-  version = "v6.15.3"
+  revision = "7f69d5e32072d151eb6936cbe2306413e8117488"
+  version = "v6.15.6"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f0f820716152dc4e016e3c86b43ed6442fa064f6ed98320078c232b45dbc229c"
+  inputs-digest = "1526dd5d2564e68fed1a368b7ee3e1515bb15aead0fb4f42d94fbf281872cee6"
   solver-name = "gps-cdcl"
   solver-version = 1

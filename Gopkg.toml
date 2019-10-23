@@ -27,7 +27,7 @@
 
 [[constraint]]
   name = "github.com/go-redis/redis"
-  version = "6.15.3"
+  version = "6.15.6"
 
 [prune]
   unused-packages = true
