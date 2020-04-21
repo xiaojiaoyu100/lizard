@@ -5,20 +5,25 @@ import (
 	"time"
 )
 
+// Counter 计数
 type Counter int64
 
+// Reset 重置
 func (c *Counter) Reset() {
 	atomic.StoreInt64((*int64)(c), 0)
 }
 
+// Incr 增加
 func (c *Counter) Incr(value int64) {
 	atomic.AddInt64((*int64)(c), value)
 }
 
+// Value 当前值
 func (c *Counter) Value() int64 {
 	return atomic.LoadInt64((*int64)(c))
 }
 
+// RateCounter 速率计数器
 type RateCounter struct {
 	counter    Counter
 	interval   time.Duration
@@ -33,14 +38,17 @@ type option struct {
 	Interval   time.Duration
 }
 
+// Setter configures option.
 type Setter func(option *option)
 
+// WithInterval configures interval.
 func WithInterval(interval time.Duration) Setter {
 	return func(option *option) {
 		option.Interval = interval
 	}
 }
 
+// WithResolution configures resolution.
 func WithResolution(resolution int) Setter {
 	if resolution < 1 {
 		resolution = 1
@@ -50,6 +58,7 @@ func WithResolution(resolution int) Setter {
 	}
 }
 
+// New generates a RateCounter.
 func New(setters ...Setter) *RateCounter {
 	rateCounter := &RateCounter{}
 	option := option{
@@ -91,12 +100,14 @@ func (r *RateCounter) run() {
 	}()
 }
 
+// Incr 增加计数
 func (r *RateCounter) Incr(val int64) {
 	r.counter.Incr(val)
 	r.partials[atomic.LoadInt32(&r.current)].Incr(val)
 	r.run()
 }
 
+// Rate 当前速率
 func (r *RateCounter) Rate() int64 {
 	return r.counter.Value()
 }

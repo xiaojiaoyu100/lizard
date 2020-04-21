@@ -2,6 +2,7 @@ package writecounter
 
 import "io"
 
+// WriteCounter records written bytes.
 type WriteCounter struct {
 	total    int64
 	current  int64
@@ -10,8 +11,10 @@ type WriteCounter struct {
 	progress Progress
 }
 
+// Progress 进度回调
 type Progress func(current, total int64) error
 
+// New 生成write counter.
 func New(reader io.Reader, total int64, progress Progress) *WriteCounter {
 	wc := new(WriteCounter)
 	wc.reader = reader
@@ -20,6 +23,7 @@ func New(reader io.Reader, total int64, progress Progress) *WriteCounter {
 	return wc
 }
 
+// Copy 拷贝字节
 func (wc *WriteCounter) Copy(writer io.Writer) error {
 	var err error
 	wc.written, err = io.Copy(writer, io.TeeReader(wc.reader, wc))
@@ -37,6 +41,7 @@ func (wc *WriteCounter) Write(p []byte) (int, error) {
 	return n, nil
 }
 
+// Written 返回写的字节数
 func (wc *WriteCounter) Written() int64 {
 	return wc.written
 }

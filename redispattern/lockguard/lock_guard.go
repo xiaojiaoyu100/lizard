@@ -17,18 +17,22 @@ else
 end`
 )
 
+// LockGuard provides distributed lock.
 type LockGuard struct {
 	lock Lock
 }
 
+// Setter 配置lock.
 type Setter func(l *Lock)
 
+// WithExpiration 设置过期时间
 func WithExpiration(expiration time.Duration) Setter {
 	return func(l *Lock) {
 		l.Expiration = expiration
 	}
 }
 
+// New 生成一个锁
 func New(redis rediser, key string, setters ...Setter) *LockGuard {
 	guard := new(LockGuard)
 	l := Lock{
@@ -44,6 +48,7 @@ func New(redis rediser, key string, setters ...Setter) *LockGuard {
 	return guard
 }
 
+// Lock 锁住
 func (guard *LockGuard) Lock() bool {
 	src := make([]byte, len(redisLockKey))
 	_, err := rand.Read(src)
@@ -60,15 +65,18 @@ func (guard *LockGuard) Lock() bool {
 	guard.lock.Value = string(src)
 	cmd := guard.lock.redis.SetNX(guard.lock.Key, guard.lock.Value, guard.lock.Expiration)
 	flag, err := cmd.Result()
+	guard.lock.locked = flag
 	if err != nil {
 		return false
 	}
 	return flag
 }
 
+// UnLock 解锁
 func (guard *LockGuard) UnLock() {
-	if len(guard.lock.Key) > 0 && len(guard.lock.Value) > 0 {
-		keys := []string{guard.lock.Key}
-		guard.lock.redis.Eval(delLuaScript, keys, guard.lock.Value)
+	if !guard.lock.locked {
+		return
 	}
+	keys := []string{guard.lock.Key}
+	guard.lock.redis.Eval(delLuaScript, keys, guard.lock.Value)
 }

@@ -42,7 +42,7 @@ func UniqueIntSlice(sli []int, filter ...interface{}) []int {
 	}
 	uniqueMap := make(map[int]struct{})
 	for _, s := range sli {
-		if filterZeroValue && s == 0  {
+		if filterZeroValue && s == 0 {
 			continue
 		}
 		_, ok := uniqueMap[s]
@@ -56,7 +56,7 @@ func UniqueIntSlice(sli []int, filter ...interface{}) []int {
 	return sl
 }
 
-// UniqueIntSlice Unique an int64 slice and optional filter zero value by optional parameter
+// UniqueInt64Slice Unique an int64 slice and optional filter zero value by optional parameter
 func UniqueInt64Slice(sli []int64, filter ...interface{}) []int64 {
 	sl := make([]int64, 0, len(sli))
 	var filterZeroValue bool
@@ -82,7 +82,7 @@ func UniqueInt64Slice(sli []int64, filter ...interface{}) []int64 {
 	return sl
 }
 
-// UniqueIntSlice Unique an string slice and optional filter zero value by optional parameter
+// UniqueStringSlice Unique an string slice and optional filter zero value by optional parameter
 func UniqueStringSlice(sli []string, filter ...interface{}) []string {
 	sl := make([]string, 0, len(sli))
 	var filterZeroValue bool

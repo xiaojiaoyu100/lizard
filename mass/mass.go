@@ -4,6 +4,7 @@ import (
 	"math"
 )
 
+// Mass 分批
 type Mass struct {
 	batchSize    int
 	count        int
@@ -12,6 +13,7 @@ type Mass struct {
 	currentTimes int
 }
 
+// New 生成分批
 func New(count, batchSize int) *Mass {
 	mass := new(Mass)
 
@@ -29,6 +31,7 @@ func New(count, batchSize int) *Mass {
 	return mass
 }
 
+// Iter 迭代分批
 func (mass *Mass) Iter(start, length *int) bool {
 	roundSize := mass.batchSize
 
@@ -46,5 +49,4 @@ func (mass *Mass) Iter(start, length *int) bool {
 	mass.currentTimes++
 
 	return *start < mass.count
-
 }

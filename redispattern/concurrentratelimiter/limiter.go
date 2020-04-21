@@ -55,13 +55,16 @@ func leaveScriptDigest() (string, error) {
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
+// Setting configures option.
 type Setting func(o *Option) error
 
+// Option 配置
 type Option struct {
 	ttl   int64 // time to live in millisecond
 	limit int64 // maximum running limit
 }
 
+// WithTTL 存活期
 func WithTTL(ttl time.Duration) Setting {
 	return func(o *Option) error {
 		o.ttl = timekit.DurationToMillis(ttl)
@@ -69,6 +72,7 @@ func WithTTL(ttl time.Duration) Setting {
 	}
 }
 
+// WithLimit 上限
 func WithLimit(limit int64) Setting {
 	return func(o *Option) error {
 		o.limit = limit
@@ -76,12 +80,14 @@ func WithLimit(limit int64) Setting {
 	}
 }
 
+// ConcurrentRateLimiter 并发限流器
 type ConcurrentRateLimiter struct {
 	redis  rediser
 	key    string
 	option Option
 }
 
+// New 生成并发限流器
 func New(redis rediser, key string, settings ...Setting) (*ConcurrentRateLimiter, error) {
 	c := &ConcurrentRateLimiter{
 		redis: redis,
@@ -100,6 +106,7 @@ func New(redis rediser, key string, settings ...Setting) (*ConcurrentRateLimiter
 	return c, nil
 }
 
+// Enter 消耗
 func (c *ConcurrentRateLimiter) Enter(random string) (bool, error) {
 	d, err := enterScriptDigest()
 	if err != nil {
@@ -134,6 +141,7 @@ func (c *ConcurrentRateLimiter) Enter(random string) (bool, error) {
 	return r == 1, nil
 }
 
+// Leave 恢复
 func (c *ConcurrentRateLimiter) Leave(random string) error {
 	d, err := leaveScriptDigest()
 	if err != nil {
