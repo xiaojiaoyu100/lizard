@@ -40,7 +40,7 @@ func New(redis rediser, key string, setters ...Setter) (*LockGuard, error) {
 		Key:        key,
 		Value:      "",
 		retryTimes: 3,
-		expiration: 1 * time.Minute,
+		expiration: 30 * time.Second,
 	}
 	for _, setter := range setters {
 		if err := setter(&l); err != nil {
@@ -73,11 +73,13 @@ func (guard *LockGuard) Run(ctx context.Context, handler Handler) error {
 		go func() {
 			defer func() {
 				if r := recover(); r != nil {
+					close(stop)
 					if _, ok := r.(error); ok {
 						errChan <- errorkit.WithStack(r.(error))
 					} else {
 						errChan <- errorkit.WithStack(fmt.Errorf("%+v", r))
 					}
+					return
 				}
 				close(stop)
 				errChan <- nil
@@ -114,7 +116,7 @@ func (guard *LockGuard) renewTTL() {
 }
 
 func (guard *LockGuard) tickInterval() time.Duration {
-	return time.Second * 10
+	return time.Second * 6
 }
 
 func (guard *LockGuard) obtain() {
