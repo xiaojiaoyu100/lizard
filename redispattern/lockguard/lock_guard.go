@@ -39,7 +39,7 @@ func New(redis rediser, key string, setters ...Setter) (*LockGuard, error) {
 		redis:      redis,
 		Key:        key,
 		Value:      "",
-		retryTimes: 1,
+		retryTimes: 3,
 		expiration: 1 * time.Minute,
 	}
 	for _, setter := range setters {
@@ -114,7 +114,7 @@ func (guard *LockGuard) renewTTL() {
 }
 
 func (guard *LockGuard) tickInterval() time.Duration {
-	return time.Second * 3
+	return time.Second * 10
 }
 
 func (guard *LockGuard) obtain() {
