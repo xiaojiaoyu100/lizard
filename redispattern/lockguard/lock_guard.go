@@ -106,7 +106,7 @@ func (guard *LockGuard) Run(ctx context.Context, handler Handler) error {
 		t.Stop()
 		return err
 	}
-	return errLockNotObtained
+	return fmt.Errorf("key: %s, err: %w", guard.lock.Key, errLockNotObtained)
 }
 
 func (guard *LockGuard) renewTTL() {
