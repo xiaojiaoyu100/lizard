@@ -10,5 +10,6 @@ type Lock struct {
 	Key        string
 	Value      string
 	locked     bool
-	Expiration time.Duration
+	retryTimes int
+	expiration time.Duration
 }

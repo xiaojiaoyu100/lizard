@@ -33,13 +33,13 @@ func (stg ConstantBackOffStrategy) Backoff(retry int) time.Duration {
 
 // ExponentialBackoff 指数回退
 type ExponentialBackoff struct {
-	base time.Duration
-	cap  time.Duration
+	Base time.Duration
+	Cap  time.Duration
 }
 
 func (backoff ExponentialBackoff) expo(retry int) float64 {
-	c := float64(backoff.cap)
-	b := float64(backoff.base)
+	c := float64(backoff.Cap)
+	b := float64(backoff.Base)
 	r := float64(retry)
 	return math.Min(c, math.Exp2(r)*b)
 }
@@ -91,8 +91,8 @@ func uniform(min, max float64) float64 {
 
 // Backoff 重试
 func (stg ExponentialBackoffDecorrelatedJitterStrategy) Backoff(retry int) time.Duration {
-	c := float64(stg.cap)
-	b := float64(stg.base)
+	c := float64(stg.Cap)
+	b := float64(stg.Base)
 	s := float64(stg.sleep)
 	u := uniform(b, 3*s)
 	s = math.Min(c, u)
