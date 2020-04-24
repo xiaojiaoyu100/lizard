@@ -2,6 +2,12 @@ package concurrentratelimiter
 
 import "github.com/go-redis/redis"
 
+var (
+	_ rediser = (*redis.Client)(nil)
+	_ rediser = (*redis.Ring)(nil)
+	_ rediser = (*redis.ClusterClient)(nil)
+)
+
 type rediser interface {
 	Eval(script string, keys []string, args ...interface{}) *redis.Cmd
 	EvalSha(sha1 string, keys []string, args ...interface{}) *redis.Cmd
