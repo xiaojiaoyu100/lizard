@@ -28,7 +28,8 @@ type LockGuard struct {
 	lock Lock
 }
 
-// New 生成一个锁
+// New 生成一个锁，同一个LockGuard实例不可用于并发环境中，并发环境中应该
+// 新开LockGuard，否则同一个LockGuard处于不同协程中，会相互重置，见reset.
 func New(redis rediser, key string, setters ...Setter) (*LockGuard, error) {
 	if key == "" {
 		return nil, errors.New("key length is zero")
@@ -53,6 +54,7 @@ func New(redis rediser, key string, setters ...Setter) (*LockGuard, error) {
 
 // Run 锁住
 func (guard *LockGuard) Run(ctx context.Context, handler Handler) error {
+	guard.reset()
 	for i := 0; i < guard.lock.retryTimes; i++ {
 		guard.obtain()
 		if !guard.lock.locked {
@@ -104,7 +106,7 @@ func (guard *LockGuard) Run(ctx context.Context, handler Handler) error {
 			err = ctx.Err()
 		case err = <-errChan:
 		}
-		guard.UnLock()
+		guard.unLock()
 		t.Stop()
 		return err
 	}
@@ -141,8 +143,12 @@ func (guard *LockGuard) obtain() {
 	guard.lock.locked = flag
 }
 
-// UnLock 解锁
-func (guard *LockGuard) UnLock() {
+func (guard *LockGuard) reset() {
+	guard.lock.locked = false
+	guard.lock.Value = ""
+}
+
+func (guard *LockGuard) unLock() {
 	if !guard.lock.locked {
 		return
 	}
