@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/xiaojiaoyu100/lizard/backoff"
-	"github.com/xiaojiaoyu100/lizard/errorkit"
 )
 
 const (
@@ -40,7 +39,7 @@ func New(redis rediser, key string, setters ...Setter) (*LockGuard, error) {
 		redis:      redis,
 		Key:        key,
 		Value:      "",
-		retryTimes: 3,
+		retryTimes: 1,
 		expiration: 30 * time.Second,
 	}
 	for _, setter := range setters {
@@ -54,8 +53,8 @@ func New(redis rediser, key string, setters ...Setter) (*LockGuard, error) {
 
 // Run 锁住
 func (guard *LockGuard) Run(ctx context.Context, handler Handler) error {
-	guard.reset()
 	for i := 0; i < guard.lock.retryTimes; i++ {
+		guard.reset()
 		guard.obtain()
 		if !guard.lock.locked {
 			if guard.lock.retryTimes > 1 {
@@ -77,9 +76,9 @@ func (guard *LockGuard) Run(ctx context.Context, handler Handler) error {
 				if r := recover(); r != nil {
 					close(stop)
 					if _, ok := r.(error); ok {
-						errChan <- errorkit.WithStack(r.(error))
+						errChan <- fmt.Errorf("%w", r.(error))
 					} else {
-						errChan <- errorkit.WithStack(fmt.Errorf("%+v", r))
+						errChan <- fmt.Errorf("%+v", r)
 					}
 					return
 				}
