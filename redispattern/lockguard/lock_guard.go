@@ -83,9 +83,8 @@ func (guard *LockGuard) Run(ctx context.Context, handler Handler) error {
 					return
 				}
 				close(stop)
-				errChan <- nil
 			}()
-			handler(ctx)
+			errChan <- handler(ctx)
 		}()
 
 		go func() {
