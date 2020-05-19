@@ -1,6 +1,6 @@
 package tokenbucket
 
-import "github.com/go-redis/redis"
+import "github.com/go-redis/redis/v7"
 
 var (
 	_ rediser = (*redis.Client)(nil)

@@ -3,7 +3,7 @@ module github.com/xiaojiaoyu100/lizard
 go 1.14
 
 require (
-	github.com/go-redis/redis v6.15.6+incompatible
+	github.com/go-redis/redis/v7 v7.2.0
 	github.com/onsi/ginkgo v1.10.2 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/pkg/errors v0.9.1
