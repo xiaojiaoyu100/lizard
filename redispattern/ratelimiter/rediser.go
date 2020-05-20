@@ -1,6 +1,6 @@
 package ratelimiter
 
-import "github.com/go-redis/redis"
+import "github.com/go-redis/redis/v7"
 
 var (
 	_ rediser = (*redis.Client)(nil)
@@ -12,5 +12,5 @@ type rediser interface {
 	LLen(key string) *redis.IntCmd
 	Exists(keys ...string) *redis.IntCmd
 	TxPipeline() redis.Pipeliner
-	RPushX(key string, values interface{}) *redis.IntCmd
+	RPushX(key string, values ...interface{}) *redis.IntCmd
 }
