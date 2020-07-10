@@ -63,7 +63,7 @@ type TokenBucket struct {
 }
 
 // New returns an instance of TokenBucket
-func New(redis rediser, key string, tokenNum int64, rate time.Duration, expiration int64) (*TokenBucket, error) {
+func New(redis rediser, key string, tokenNum int64, rate time.Duration) (*TokenBucket, error) {
 	h := sha1.New()
 	_, err := io.WriteString(h, script)
 	if err != nil {
@@ -79,7 +79,7 @@ func New(redis rediser, key string, tokenNum int64, rate time.Duration, expirati
 		Key:        key,
 		TokenNum:   tokenNum,
 		Rate:       rate,
-		Expiration: expiration,
+		Expiration: int64(rate.Seconds()) + 1,
 	}, nil
 }
 
