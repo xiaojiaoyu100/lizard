@@ -39,7 +39,7 @@ func auth(fn func(w http.ResponseWriter, r *http.Request)) func(c *gin.Context) 
 	}
 }
 
-func InitRoutes(engine *gin.Engine) {
+func InitRouters(engine *gin.Engine) {
 	engine.GET("/debug/pprof/", auth(pprof.Index))
 	engine.GET("/debug/pprof/cmdline", auth(pprof.Cmdline))
 	engine.GET("/debug/pprof/profile", auth(pprof.Profile))
