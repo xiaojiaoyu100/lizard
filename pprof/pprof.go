@@ -39,6 +39,7 @@ func auth(fn func(w http.ResponseWriter, r *http.Request)) func(c *gin.Context) 
 	}
 }
 
+// InitRoutes inits pprof routes.
 func InitRoutes(engine *gin.Engine) {
 	engine.GET("/debug/pprof/", auth(pprof.Index))
 	engine.GET("/debug/pprof/cmdline", auth(pprof.Cmdline))
