@@ -64,14 +64,14 @@ func New(oo ...Option) (*Hash, error) {
 	}
 	h.d.MinLength = minAlphabetLength
 	h.d.Alphabet = defaultAlphabet
-	h.h, err = hashids.NewWithData(h.d)
-	if err != nil {
-		return nil, err
-	}
 	for _, o := range oo {
 		if err := o(h); err != nil {
 			return nil, err
 		}
+	}
+	h.h, err = hashids.NewWithData(h.d)
+	if err != nil {
+		return nil, err
 	}
 	err = checkSalt(h.d.Salt)
 	if err != nil {
