@@ -1,6 +1,10 @@
 package hashid
 
-import "github.com/speps/go-hashids"
+import (
+	"fmt"
+
+	"github.com/speps/go-hashids"
+)
 
 const (
 	defaultAlphabet   string = "abcdefghijklmnopqrstuvwxyz1234567890"
@@ -13,14 +17,34 @@ type Option func(h *Hash) error
 // WithSalt sets the underlying salt.
 func WithSalt(salt string) Option {
 	return func(h *Hash) error {
+		err := checkSalt(salt)
+		if err != nil {
+			return err
+		}
+		if h.d.Salt != "" {
+			return fmt.Errorf("can not change the salt when having a value")
+		}
 		h.d.Salt = salt
 		return nil
 	}
 }
 
+func checkSalt(salt string) error {
+	if salt == "" {
+		return fmt.Errorf("salt can not be a zero string")
+	}
+	return nil
+}
+
 // WithAlphabet sets the underlying alphabet.
 func WithAlphabet(alphabet string) Option {
 	return func(h *Hash) error {
+		if alphabet == "" {
+			return fmt.Errorf("alphabet can not be a zero string")
+		}
+		if h.d.Alphabet != "" {
+			return fmt.Errorf("can not change the alphabet when having a value")
+		}
 		h.d.Alphabet = alphabet
 		return nil
 	}
@@ -49,6 +73,10 @@ func New(oo ...Option) (*Hash, error) {
 			return nil, err
 		}
 	}
+	err = checkSalt(h.d.Salt)
+	if err != nil {
+		return nil, err
+	}
 	return h, nil
 }
 
@@ -56,7 +84,7 @@ func New(oo ...Option) (*Hash, error) {
 func (h *Hash) Encode(ii ...int64) (map[int64]string, error) {
 	ret := make(map[int64]string)
 	for _, i := range ii {
-		s, err := h.h.EncodeInt64(ii)
+		s, err := h.h.EncodeInt64([]int64{i})
 		if err != nil {
 			return nil, err
 		}
