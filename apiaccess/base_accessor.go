@@ -1,24 +1,50 @@
 package apiaccess
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
+	"time"
+
+	"github.com/xiaojiaoyu100/lizard/convert"
 )
 
 type baseAccessor struct {
 	evalSignatureFunc EvalSignature
-	evalNonceKeyFunc  EvalNonceKey
 	timestampChecker  TimestampChecker
 	nonceChecker      NonceChecker
 	args              args
+}
+
+func defEvalSignatureFunc(move uint) EvalSignature {
+	return func(origin string) (signature string) {
+		md5Hash := md5.New()
+		_, _ = md5Hash.Write(convert.String2Byte(origin))
+		checksumText := strings.ToLower(hex.EncodeToString(md5Hash.Sum(nil)))
+		return checksumText[move:] + checksumText[:move]
+	}
+}
+
+func defTimestampChecker(timestamp int64) error {
+	const sec = 5
+	dt := time.Now().Unix() - timestamp
+	if dt > sec || dt < -sec {
+		return ErrTimestampTimeout
+	}
+	return nil
+}
+
+func defNonceChecker(nonce string) error {
+	return nil
 }
 
 func newBaseAccessor() baseAccessor {
 	const baseSignatureMoveSep = 2 // 签名md5移动2位
 	return baseAccessor{
 		evalSignatureFunc: defEvalSignatureFunc(baseSignatureMoveSep),
-		evalNonceKeyFunc:  defEvalNonceKey,
 		timestampChecker:  defTimestampChecker,
 		nonceChecker:      defNonceChecker,
 		args:              newArgs(),
@@ -51,7 +77,7 @@ func (a *baseAccessor) CheckSignature() error {
 	signature := a.evalSignatureFunc(argText)
 	argSignature := a.args.kv[signatureTag]
 	if signature != argSignature {
-		return fmt.Errorf("%w: want %s, get %s", ErrSignatureUnmatch, signature, argSignature)
+		return fmt.Errorf("%w: want %s, get %s", ErrSignatureUnmatched, signature, argSignature)
 	}
 	return nil
 }

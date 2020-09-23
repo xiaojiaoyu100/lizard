@@ -31,10 +31,12 @@ end
 return no
 `)
 
-func WithGeneralRedisNonceChecker(client *redis.Client, sec int64) Setter {
+type KeyGen func(nonce string) (key string)
+
+func WithGeneralRedisNonceChecker(client *redis.Client, sec int64, keyGenFunc KeyGen) Setter {
 	return func(b *baseAccessor) error {
 		b.nonceChecker = func(nonce string) error {
-			key := b.evalNonceKeyFunc(b.args.kv[nonceTag])
+			key := keyGenFunc(b.args.kv[nonceTag])
 			re, err := checkCountScript.Run(client, []string{key}, 1, sec).Int()
 			if err != nil {
 				return err
@@ -44,6 +46,13 @@ func WithGeneralRedisNonceChecker(client *redis.Client, sec int64) Setter {
 			}
 			return nil
 		}
+		return nil
+	}
+}
+
+func WithNonceChecker(nc NonceChecker) Setter {
+	return func(b *baseAccessor) error {
+		b.nonceChecker = nc
 		return nil
 	}
 }
