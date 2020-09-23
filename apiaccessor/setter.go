@@ -1,4 +1,4 @@
-package apiaccess
+package apiaccessor
 
 import "github.com/go-redis/redis/v7"
 

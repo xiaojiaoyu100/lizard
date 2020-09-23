@@ -1,4 +1,4 @@
-package apiaccess
+package apiaccessor
 
 import (
 	"crypto/md5"
