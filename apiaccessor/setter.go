@@ -33,7 +33,7 @@ return no
 
 type KeyGen func(nonce string) (key string)
 
-func WithGeneralRedisNonceChecker(client *redis.Client, sec int64, keyGenFunc KeyGen) Setter {
+func WithGeneralRedisNonceChecker(client redis.Cmdable, sec int64, keyGenFunc KeyGen) Setter {
 	return func(b *baseAccessor) error {
 		b.nonceChecker = func(nonce string) error {
 			key := keyGenFunc(b.args.kv[nonceTag])
