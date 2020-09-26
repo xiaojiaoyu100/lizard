@@ -1,6 +1,9 @@
 package convert
 
-import "unsafe"
+import (
+	"reflect"
+	"unsafe"
+)
 
 // ByteToString converts a byte slice to string.
 func ByteToString(b []byte) string {
@@ -8,6 +11,8 @@ func ByteToString(b []byte) string {
 }
 
 // String2Byte converts a string to byte slice.
-func String2Byte(s string) []byte {
-	return *(*[]byte)(unsafe.Pointer(&s))
+func String2Byte(s string) (b []byte) {
+	b = *(*[]byte)(unsafe.Pointer(&s))
+	(*reflect.SliceHeader)(unsafe.Pointer(&b)).Cap = len(s)
+	return
 }
