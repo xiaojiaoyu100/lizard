@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/xiaojiaoyu100/lizard/convert"
 )
 
 type baseAccessor struct {
@@ -22,7 +20,7 @@ type baseAccessor struct {
 func defEvalSignatureFunc(move uint) EvalSignature {
 	return func(origin string) (signature string) {
 		md5Hash := md5.New()
-		_, _ = md5Hash.Write(convert.String2Byte(origin))
+		_, _ = md5Hash.Write([]byte(origin))
 		checksumText := strings.ToLower(hex.EncodeToString(md5Hash.Sum(nil)))
 		return checksumText[move:] + checksumText[:move]
 	}
