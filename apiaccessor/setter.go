@@ -2,8 +2,10 @@ package apiaccessor
 
 import "github.com/go-redis/redis/v7"
 
+// Setter is the option of creating the Accessor
 type Setter func(b *baseAccessor) error
 
+// WithEvalSignatureFunc set a custom EvalSignature for the Accessor
 func WithEvalSignatureFunc(e EvalSignature) Setter {
 	return func(b *baseAccessor) error {
 		b.evalSignatureFunc = e
@@ -31,8 +33,10 @@ end
 return no
 `)
 
+// KeyGen use to generate a redis key which is using in the WithGeneralRedisNonceChecker
 type KeyGen func(nonce string) (key string)
 
+// WithGeneralRedisNonceChecker set a redis-base NonceChecker for the Accessor
 func WithGeneralRedisNonceChecker(client redis.Cmdable, sec int64, keyGenFunc KeyGen) Setter {
 	return func(b *baseAccessor) error {
 		b.nonceChecker = func(nonce string) error {
@@ -42,7 +46,7 @@ func WithGeneralRedisNonceChecker(client redis.Cmdable, sec int64, keyGenFunc Ke
 				return err
 			}
 			if re == 1 {
-				return ErrNonceUsed
+				return errNonceUsed
 			}
 			return nil
 		}
@@ -50,6 +54,7 @@ func WithGeneralRedisNonceChecker(client redis.Cmdable, sec int64, keyGenFunc Ke
 	}
 }
 
+// WithNonceChecker set a custom NonceChecker for the Accessor
 func WithNonceChecker(nc NonceChecker) Setter {
 	return func(b *baseAccessor) error {
 		b.nonceChecker = nc

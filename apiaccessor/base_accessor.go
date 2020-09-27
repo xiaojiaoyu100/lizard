@@ -30,7 +30,7 @@ func defTimestampChecker(timestamp int64) error {
 	const sec = 5
 	dt := time.Now().Unix() - timestamp
 	if dt > sec || dt < -sec {
-		return ErrTimestampTimeout
+		return errTimestampTimeout
 	}
 	return nil
 }
@@ -49,6 +49,7 @@ func newBaseAccessor() baseAccessor {
 	}
 }
 
+// CheckSignature implements the Accessor CheckSignature interface
 func (a *baseAccessor) CheckSignature() error {
 	// 参数排序
 	sort.Slice(a.args.l, func(i, j int) bool {
@@ -75,11 +76,12 @@ func (a *baseAccessor) CheckSignature() error {
 	signature := a.evalSignatureFunc(argText)
 	argSignature := a.args.kv[signatureTag]
 	if signature != argSignature {
-		return fmt.Errorf("%w: want %s, get %s", ErrSignatureUnmatched, signature, argSignature)
+		return fmt.Errorf("%w: want %s, get %s", errSignatureUnmatched, signature, argSignature)
 	}
 	return nil
 }
 
+// CheckTimestamp implements the Accessor CheckTimestamp interface
 func (a *baseAccessor) CheckTimestamp() error {
 	timestampStr := a.args.kv[timestampTag]
 	timestamp, err := strconv.ParseInt(timestampStr, 10, 64)
@@ -89,6 +91,7 @@ func (a *baseAccessor) CheckTimestamp() error {
 	return a.timestampChecker(timestamp)
 }
 
+// CheckNonce implements the Accessor CheckNonce interface
 func (a *baseAccessor) CheckNonce() error {
 	return a.nonceChecker(a.args.kv[nonceTag])
 }
