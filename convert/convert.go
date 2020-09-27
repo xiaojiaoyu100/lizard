@@ -7,7 +7,7 @@ func ByteToString(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }
 
-// String2Byte converts a string to byte slice.
-func String2Byte(s string) []byte {
+// StringToByte converts a string to byte slice.
+func StringToByte(s string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&s))
 }
