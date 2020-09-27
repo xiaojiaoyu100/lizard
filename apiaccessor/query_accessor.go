@@ -5,10 +5,12 @@ import (
 	"net/url"
 )
 
+// QueryAccessor use to check the availability of the request's query arguments
 type QueryAccessor struct {
 	baseAccessor
 }
 
+// NewQueryAccessor creates a new QueryAccessor.
 func NewQueryAccessor(query url.Values, secretKey string, setters ...Setter) (*QueryAccessor, error) {
 	qa := &QueryAccessor{
 		baseAccessor: newBaseAccessor(),
@@ -16,19 +18,19 @@ func NewQueryAccessor(query url.Values, secretKey string, setters ...Setter) (*Q
 	for key, vs := range query {
 		v := vs[0]
 		if len(v) == 0 {
-			return nil, fmt.Errorf("%w: %s", ErrArgLack, key)
+			return nil, fmt.Errorf("%w: %s", errArgLack, key)
 		}
 		qa.args.append(key, v)
 	}
 	qa.args.append(secretKeyTag, secretKey)
 	if len(qa.args.kv[nonceTag]) == 0 {
-		return nil, fmt.Errorf("%w: %s", ErrArgLack, nonceTag)
+		return nil, fmt.Errorf("%w: %s", errArgLack, nonceTag)
 	}
 	if len(qa.args.kv[timestampTag]) == 0 {
-		return nil, fmt.Errorf("%w: %s", ErrArgLack, timestampTag)
+		return nil, fmt.Errorf("%w: %s", errArgLack, timestampTag)
 	}
 	if len(qa.args.kv[signatureTag]) == 0 {
-		return nil, fmt.Errorf("%w: %s", ErrArgLack, signatureTag)
+		return nil, fmt.Errorf("%w: %s", errArgLack, signatureTag)
 	}
 
 	for _, setter := range setters {

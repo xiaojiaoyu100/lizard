@@ -4,6 +4,7 @@ import (
 	"errors"
 )
 
+// Accessor is the interface use to check the availability of the request's arguments
 type Accessor interface {
 	CheckSignature() error
 	CheckTimestamp() error
@@ -11,10 +12,10 @@ type Accessor interface {
 }
 
 var (
-	ErrArgLack            = errors.New("arg lack")
-	ErrSignatureUnmatched = errors.New("signature is unmatched")
-	ErrTimestampTimeout   = errors.New("timestamp time out")
-	ErrNonceUsed          = errors.New("nonce is used")
+	errArgLack            = errors.New("arg lack")
+	errSignatureUnmatched = errors.New("signature is unmatched")
+	errTimestampTimeout   = errors.New("timestamp time out")
+	errNonceUsed          = errors.New("nonce is used")
 )
 
 const (
@@ -46,8 +47,11 @@ func (a *args) append(k, v string) {
 	a.l = append(a.l, &arg{k: k, v: v})
 }
 
+// EvalSignature evaluating the signature of the request's arguments
 type EvalSignature func(origin string) (signature string)
 
+// TimestampChecker checking the availability of the request's timestamp argument
 type TimestampChecker func(timestamp int64) error
 
+// NonceChecker checking the availability of the request's nonce argument
 type NonceChecker func(nonce string) error
