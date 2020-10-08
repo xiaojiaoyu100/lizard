@@ -46,7 +46,7 @@ func WithGeneralRedisNonceChecker(client redis.Cmdable, sec int64, keyGenFunc Ke
 				return err
 			}
 			if re == 1 {
-				return errNonceUsed
+				return ErrNonceUsed
 			}
 			return nil
 		}
@@ -58,6 +58,14 @@ func WithGeneralRedisNonceChecker(client redis.Cmdable, sec int64, keyGenFunc Ke
 func WithNonceChecker(nc NonceChecker) Setter {
 	return func(b *baseAccessor) error {
 		b.nonceChecker = nc
+		return nil
+	}
+}
+
+// WithTimestampChecker set a custom TimestampChecker for the Accessor
+func WithTimestampChecker(tc TimestampChecker) Setter {
+	return func(b *baseAccessor) error {
+		b.timestampChecker = tc
 		return nil
 	}
 }

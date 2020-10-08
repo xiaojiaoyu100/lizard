@@ -12,10 +12,14 @@ type Accessor interface {
 }
 
 var (
-	errArgLack            = errors.New("arg lack")
-	errSignatureUnmatched = errors.New("signature is unmatched")
-	errTimestampTimeout   = errors.New("timestamp time out")
-	errNonceUsed          = errors.New("nonce is used")
+	// ErrArgLack represent the request's arguments are lack.
+	ErrArgLack = errors.New("arg lack")
+	// ErrSignatureUnmatched represent the signature of the request's arguments is wrong.
+	ErrSignatureUnmatched = errors.New("signature is unmatched")
+	// ErrTimestampTimeout represent the timestamp argument timeout.
+	ErrTimestampTimeout = errors.New("timestamp time out")
+	// ErrNonceUsed represent the nonce argument had been used.
+	ErrNonceUsed = errors.New("nonce is used")
 )
 
 const (

@@ -27,15 +27,21 @@ func defEvalSignatureFunc(move uint) EvalSignature {
 }
 
 func defTimestampChecker(timestamp int64) error {
-	const sec = 5
-	dt := time.Now().Unix() - timestamp
+	const (
+		sec        = 5
+		timeFormat = "2006/01/02 15:04:05"
+	)
+	now := time.Now()
+	dt := now.Unix() - timestamp
 	if dt > sec || dt < -sec {
-		return errTimestampTimeout
+		nowTimeStr := now.Format(timeFormat)
+		timestampStr := time.Unix(timestamp, 0).In(now.Location()).Format(timeFormat)
+		return fmt.Errorf("%w: now %s, get %s", ErrTimestampTimeout, nowTimeStr, timestampStr)
 	}
 	return nil
 }
 
-func defNonceChecker(nonce string) error {
+func defNonceChecker(_ string) error {
 	return nil
 }
 
@@ -76,7 +82,7 @@ func (a *baseAccessor) CheckSignature() error {
 	signature := a.evalSignatureFunc(argText)
 	argSignature := a.args.kv[signatureTag]
 	if signature != argSignature {
-		return fmt.Errorf("%w: want %s, get %s", errSignatureUnmatched, signature, argSignature)
+		return fmt.Errorf("%w: want %s, get %s", ErrSignatureUnmatched, signature, argSignature)
 	}
 	return nil
 }
