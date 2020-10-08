@@ -18,19 +18,19 @@ func NewQueryAccessor(query url.Values, secretKey string, setters ...Setter) (*Q
 	for key, vs := range query {
 		v := vs[0]
 		if len(v) == 0 {
-			return nil, fmt.Errorf("%w: %s", errArgLack, key)
+			return nil, fmt.Errorf("%w: %s", ErrArgLack, key)
 		}
 		qa.args.append(key, v)
 	}
 	qa.args.append(secretKeyTag, secretKey)
 	if len(qa.args.kv[nonceTag]) == 0 {
-		return nil, fmt.Errorf("%w: %s", errArgLack, nonceTag)
+		return nil, fmt.Errorf("%w: %s", ErrArgLack, nonceTag)
 	}
 	if len(qa.args.kv[timestampTag]) == 0 {
-		return nil, fmt.Errorf("%w: %s", errArgLack, timestampTag)
+		return nil, fmt.Errorf("%w: %s", ErrArgLack, timestampTag)
 	}
 	if len(qa.args.kv[signatureTag]) == 0 {
-		return nil, fmt.Errorf("%w: %s", errArgLack, signatureTag)
+		return nil, fmt.Errorf("%w: %s", ErrArgLack, signatureTag)
 	}
 
 	for _, setter := range setters {
