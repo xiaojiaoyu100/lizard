@@ -8,7 +8,7 @@ import (
 	"github.com/go-playground/assert/v2"
 )
 
-func Test_defTimestampChecker(t *testing.T) {
+func TestDefTimestampChecker(t *testing.T) {
 	err := defTimestampChecker(1602146001) // 2020-10-08 16:33:21
 	assert.Equal(t, errors.Is(err, ErrTimestampTimeout), true)
 	t.Log(err)
