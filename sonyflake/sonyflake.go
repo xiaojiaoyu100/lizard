@@ -22,7 +22,7 @@ const (
 	sonyflakeTimeUnit = 1e7 // nsec, i.e. 10 msec
 )
 
-var DefaultStartTime = time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC)
+var DefaultStartTime = time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC)
 
 // Sonyflake is a distributed unique ID generator.
 type Sonyflake struct {
