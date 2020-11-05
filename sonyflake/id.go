@@ -7,6 +7,14 @@ import (
 
 type ID int64
 
+func IDFromString(s string) (ID, error) {
+	id, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return ID(0), err
+	}
+	return ID(id), nil
+}
+
 func (i *ID) MarshalJSON() ([]byte, error) {
 	b := []byte(strconv.FormatInt(int64(*i), 10))
 	return b, nil
