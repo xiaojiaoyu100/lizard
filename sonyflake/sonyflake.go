@@ -74,7 +74,7 @@ func (sf *Sonyflake) NextID() (ID, error) {
 }
 
 func GetTimeByID(id ID) time.Time {
-	return time.Unix(0, (toSonyflakeTime(DefaultStartTime)+(id.ToInt64()>>(BitLenSequence+BitLenMachineID)))*sonyflakeTimeUnit)
+	return time.Unix(0, (toSonyflakeTime(DefaultStartTime)+(id.Int64()>>(BitLenSequence+BitLenMachineID)))*sonyflakeTimeUnit)
 }
 
 func toSonyflakeTime(t time.Time) int64 {
