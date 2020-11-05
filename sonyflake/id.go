@@ -29,6 +29,6 @@ func (i *ID) String() string {
 	return strconv.FormatInt(int64(*i), 10)
 }
 
-func (i *ID) GetTimeByID() time.Time {
+func (i *ID) Time() time.Time {
 	return time.Unix(0, (toSonyflakeTime(DefaultStartTime)+(i.Int64()>>(BitLenSequence+BitLenMachineID)))*sonyflakeTimeUnit)
 }
