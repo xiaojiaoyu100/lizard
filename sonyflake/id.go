@@ -18,10 +18,10 @@ func (i *ID) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (i *ID) ToInt64() int64 {
+func (i *ID) Int64() int64 {
 	return int64(*i)
 }
 
-func (i *ID) ToString() string {
+func (i *ID) String() string {
 	return strconv.FormatInt(int64(*i), 10)
 }
