@@ -1,6 +1,7 @@
 package sonyflake
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -16,16 +17,15 @@ func IDFromString(s string) (ID, error) {
 }
 
 func (i *ID) MarshalJSON() ([]byte, error) {
-	b := []byte(strconv.FormatInt(int64(*i), 10))
-	return b, nil
+	return []byte(fmt.Sprintf("\"%v\"", i)), nil
 }
 
-func (i *ID) UnmarshalJSON(b []byte) error {
-	id, err := strconv.ParseInt(string(b), 10, 64)
+func (i *ID) UnmarshalJSON(value []byte) error {
+	m, err := strconv.ParseInt(string(value[1:len(value)-1]), 10, 32)
 	if err != nil {
 		return err
 	}
-	*i = ID(id)
+	*i = ID(m)
 	return nil
 }
 
