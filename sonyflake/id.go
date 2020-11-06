@@ -21,7 +21,7 @@ func (i *ID) MarshalJSON() ([]byte, error) {
 }
 
 func (i *ID) UnmarshalJSON(b []byte) error {
-	id, err := strconv.ParseInt(string(b[1:len(b)-1]), 10, 32)
+	id, err := strconv.ParseInt(string(b[1:len(b)-1]), 10, 64)
 	if err != nil {
 		return err
 	}
