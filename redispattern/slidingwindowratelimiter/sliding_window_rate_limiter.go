@@ -3,6 +3,7 @@ package slidingwindowratelimiter
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -28,6 +29,13 @@ redis.call('EXPIRE', key, window / 1000000000)
 return limit - count
 `
 )
+
+var errLimitHit = errors.New("limit hit")
+
+// IsLimitHit detects a limit condition.
+func IsLimitHit(err error) bool {
+	return errors.Is(err, errLimitHit)
+}
 
 func scriptDigest() (string, error) {
 	s := sha1.New()
@@ -79,6 +87,9 @@ func (sl *SlidingWindowRateLimiter) Allow() (bool, error) {
 	}
 	switch v := ret.(type) {
 	case int64:
+		if v == 0 {
+			return false, errLimitHit
+		}
 		return v > 0, nil
 	default:
 		return false, fmt.Errorf("sliding window rate limiter err: %#v, key = %s, window = %s, limit = %d", ret, sl.key, sl.window, sl.limit)
