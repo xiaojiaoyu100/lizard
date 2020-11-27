@@ -85,6 +85,6 @@ func (sl *SlidingWindowRateLimiter) Allow() (bool, error) {
 		}
 		return true, nil
 	default:
-		return false, fmt.Errorf("sliding window rate limiter err: %#v, key = %s, window = %s, limit = %d", ret, sl.key, sl.window, sl.limit)
+		return false, fmt.Errorf("sliding window rate limiter value: %#v, key = %s, window = %s, limit = %d", ret, sl.key, sl.window, sl.limit)
 	}
 }
