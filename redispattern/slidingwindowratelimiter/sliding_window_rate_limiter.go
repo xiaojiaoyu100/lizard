@@ -47,13 +47,24 @@ type SlidingWindowRateLimiter struct {
 	limit  int64
 }
 
+// Option is necessary for creating a limiter.
+type Option struct {
+	Redis  rediser
+	Key    string
+	Window time.Duration
+	Limit  int64
+}
+
 // New generates a rate limiter.
-func New(redis rediser, key string, window time.Duration, limit int64) (*SlidingWindowRateLimiter, error) {
+func New(o *Option) (*SlidingWindowRateLimiter, error) {
+	if o.Window.Seconds() < 1 {
+		return nil, errors.New("below one second is not supported")
+	}
 	sl := &SlidingWindowRateLimiter{
-		redis:  redis,
-		key:    key,
-		window: window,
-		limit:  limit,
+		redis:  o.Redis,
+		key:    o.Key,
+		window: o.Window,
+		limit:  o.Limit,
 	}
 	return sl, nil
 }
