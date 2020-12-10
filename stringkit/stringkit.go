@@ -57,3 +57,25 @@ func FormatAnswer(answer string) string {
 	result := space.ReplaceAllString(trimedSpaceString, " ")
 	return result
 }
+
+// UniqueAndFilterStr ...
+func UniqueAndFilterStr(ss []string) []string {
+	if len(ss) == 0 {
+		return ss
+	}
+	sl := make([]string, 0, len(ss))
+	uniqueMap := make(map[string]struct{})
+	for _, s := range ss {
+		if len(s) == 0 {
+			continue
+		}
+		_, ok := uniqueMap[s]
+		if ok {
+			continue
+		} else {
+			uniqueMap[s] = struct{}{}
+		}
+		sl = append(sl, s)
+	}
+	return sl
+}
