@@ -1,4 +1,4 @@
-package utils
+package aeskit
 
 import (
 	"bytes"
