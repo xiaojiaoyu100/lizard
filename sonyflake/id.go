@@ -18,8 +18,8 @@ func IDFromString(s string) (ID, error) {
 }
 
 // MarshalText ...
-func (i *ID) MarshalText() ([]byte, error) {
-	return []byte(strconv.FormatInt(int64(*i), 10)), nil
+func (i ID) MarshalText() ([]byte, error) {
+	return []byte(strconv.FormatInt(int64(i), 10)), nil
 }
 
 // UnmarshalText ...
