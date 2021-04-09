@@ -22,6 +22,7 @@ const (
 	sonyflakeTimeUnit = 1e7 // nsec, i.e. 10 msec
 )
 
+// DefaultStartTime ...
 var DefaultStartTime = time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC)
 
 // Sonyflake is a distributed unique ID generator.
@@ -51,7 +52,7 @@ func NewSonyflake(machineID uint16) (*Sonyflake, error) {
 
 // NextID generates a next unique ID.
 // After the Sonyflake time overflows, NextID returns an error.
-func (sf *Sonyflake) NextID() (int64, error) {
+func (sf *Sonyflake) NextID() (ID, error) {
 	const maskSequence = uint16(1<<BitLenSequence - 1)
 
 	sf.mutex.Lock()
@@ -73,10 +74,6 @@ func (sf *Sonyflake) NextID() (int64, error) {
 	return sf.toID()
 }
 
-func GetTimeByID(id int64) time.Time {
-	return time.Unix(0, (toSonyflakeTime(DefaultStartTime)+(id>>(BitLenSequence+BitLenMachineID)))*sonyflakeTimeUnit)
-}
-
 func toSonyflakeTime(t time.Time) int64 {
 	return t.UTC().UnixNano() / sonyflakeTimeUnit
 }
@@ -90,22 +87,23 @@ func sleepTime(overtime int64) time.Duration {
 		time.Duration(time.Now().UTC().UnixNano()%sonyflakeTimeUnit)*time.Nanosecond
 }
 
-func (sf *Sonyflake) toID() (int64, error) {
+func (sf *Sonyflake) toID() (ID, error) {
 	if sf.elapsedTime >= 1<<BitLenTime {
 		return 0, errors.New("over the time limit")
 	}
 
-	return int64(uint64(sf.elapsedTime)<<(BitLenSequence+BitLenMachineID) |
+	return ID(uint64(sf.elapsedTime)<<(BitLenSequence+BitLenMachineID) |
 		uint64(sf.sequence)<<BitLenMachineID |
 		uint64(sf.machineID)), nil
 }
 
+// IDComposition ...
 type IDComposition struct {
 	ID        int64 `json:"id"`
 	Msb       int64 `json:"msb"`
 	Time      int64 `json:"time"`
 	Sequence  int64 `json:"sequence"`
-	MachineId int64 `json:"machine_id"`
+	MachineID int64 `json:"machine_id"`
 }
 
 // Decompose returns a set of Sonyflake ID parts.
@@ -122,6 +120,6 @@ func Decompose(id int64) IDComposition {
 		Msb:       msb,
 		Time:      decomposeTime,
 		Sequence:  sequence,
-		MachineId: machineID,
+		MachineID: machineID,
 	}
 }
