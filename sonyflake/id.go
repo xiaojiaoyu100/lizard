@@ -24,6 +24,10 @@ func (i ID) MarshalText() ([]byte, error) {
 
 // UnmarshalText ...
 func (i *ID) UnmarshalText(b []byte) error {
+	if len(string(b)) == 0 {
+		*i = ID(0)
+		return nil
+	}
 	id, err := strconv.ParseInt(string(b), 10, 64)
 	if err != nil {
 		return err
