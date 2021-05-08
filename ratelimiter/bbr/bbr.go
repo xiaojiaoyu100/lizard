@@ -5,9 +5,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/xiaojiaoyu100/lizard/cpukit"
-	"github.com/xiaojiaoyu100/lizard/group"
-	"github.com/xiaojiaoyu100/lizard/metric"
+	"github.com/go-kratos/kratos/pkg/container/group"
+	"github.com/go-kratos/kratos/pkg/stat/metric"
+	cpustat "github.com/go-kratos/kratos/pkg/stat/sys/cpu"
 	"github.com/xiaojiaoyu100/lizard/ratelimiter"
 )
 
@@ -39,8 +39,8 @@ func cpuproc(logger ratelimiter.Logger) {
 
 	// EMA algorithm: https://blog.csdn.net/m0_38106113/article/details/81542863
 	for range ticker.C {
-		stat := &cpukit.Stat{}
-		cpukit.ReadStat(stat)
+		stat := &cpustat.Stat{}
+		cpustat.ReadStat(stat)
 		prevCpu := atomic.LoadInt64(&cpu)
 		curCpu := int64(float64(prevCpu)*decay + float64(stat.Usage)*(1.0-decay))
 		atomic.StoreInt64(&cpu, curCpu)
@@ -246,7 +246,8 @@ type Group struct {
 }
 
 // NewGroup new a limiter group container, if conf nil use default conf.
-func NewGroup(conf *Config) *Group {
+func NewGroup(conf *Config, logger ratelimiter.Logger) *Group {
+	go cpuproc(logger)
 	if conf == nil {
 		conf = defaultConf
 	}
