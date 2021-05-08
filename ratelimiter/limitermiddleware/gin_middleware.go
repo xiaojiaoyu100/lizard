@@ -20,7 +20,7 @@ type LimiterMiddleware struct {
 
 func NewLimiterMiddleware(conf *bbr.Config, logger ratelimiter.Logger, abortHttpErr interface{}) *LimiterMiddleware {
 	return &LimiterMiddleware{
-		limiterGroup: bbr.NewGroup(conf),
+		limiterGroup: bbr.NewGroup(conf, logger),
 		abortHttpErr: abortHttpErr,
 		logger:       logger,
 	}
