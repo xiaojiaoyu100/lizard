@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/StackExchange/wmi v0.0.0-20210224194228-fe8f1750fd46 // indirect
-	github.com/gin-gonic/gin v1.6.3
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-kratos/kratos v1.0.0
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-playground/assert/v2 v2.0.1
