@@ -14,5 +14,5 @@ require (
 	github.com/shirou/gopsutil v3.21.4+incompatible // indirect
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
-	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
+	golang.org/x/net v0.7.0 // indirect
 )
